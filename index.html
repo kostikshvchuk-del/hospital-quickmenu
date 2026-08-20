@@ -557,6 +557,21 @@
             display: none;
         }
 
+        #departmentFields {
+            overflow: hidden;
+            max-height: 300px;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), margin 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+        }
+
+        #departmentFields.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin: 0;
+            padding: 0;
+            pointer-events: none;
+        }
+
         .anchor {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 8px 18px; border-radius: 8px;
@@ -681,13 +696,15 @@
                 </div>
                 <div class="note">Никнейм или подпись главного врача</div>
             </div>
+        </div>
+        <div id="departmentFields">
             <div class="form-group important">
                 <label>Подпись Главы Отдела</label>
                 <div class="input-wrapper">
                     <div class="input-visual" id="visual-departmentHeadSign"><span class="cursor-blink"></span></div>
                     <input type="text" id="departmentHeadSign" class="animated-input" placeholder="ГлаваОтдела">
                 </div>
-                <div class="note">Никнейм или подпись главы отдела</div>
+                <div class="note">Никнейм или подпись главы отдела (если отдел выбран)</div>
             </div>
         </div>
 
@@ -727,6 +744,7 @@
     <script>
         const departmentSelect = document.getElementById('department');
         const departmentDesc = document.getElementById('departmentDesc');
+        const noDepartmentText = "Отсутствует";
 
         const departmentDescriptions = {
             "Хирургия": "Отделение хирургии — проведение операций и хирургических вмешательств.",
@@ -735,9 +753,16 @@
             "Педиатрия": "Педиатрическое отделение — медицинская помощь детям и подросткам."
         };
 
+        const departmentFields = document.getElementById('departmentFields');
+
         function toggleDepartmentFields() {
             const desc = departmentDescriptions[departmentSelect.value] || '';
             if (departmentDesc) departmentDesc.textContent = desc || 'Выберите отдел, чтобы увидеть описание.';
+            if (departmentSelect.value === noDepartmentText) {
+                departmentFields.classList.add('collapsed');
+            } else {
+                departmentFields.classList.remove('collapsed');
+            }
         }
 
         departmentSelect.addEventListener('change', toggleDepartmentFields);
@@ -824,6 +849,7 @@
 
             const noDepartmentText = "Отсутствует";
             const departmentLabel = department === noDepartmentText ? "Больница" : department;
+            const departmentHeadText = department === noDepartmentText ? "" : ` | Подпись Главы Отдела: ${departmentHeadSign}`;
 
             let template = [
                 {"name":"/vrc","actions":[["cmd","/vrc"]],"icon":"porting_lib:area_selector","customModelData":0,"keybind":[]},
@@ -835,7 +861,7 @@
                         `/me достал удостоверение из кармана халата, показал его человеку напротив несколько секунд в открытом виде, после чего захлопнул и убрал обратно.`,
                         `/me достала удостоверение из кармана халата, показала его человеку напротив несколько секунд в открытом виде, после чего захлопнула и убрала обратно.`
                     )],
-                    [`cmd`,`/do Информация в удостоверении: ИФ: ${rpName} | Фотография сотрудника 3x4 | Организация: Больница | Должность: ${position} | Отдел: ${departmentLabel} | Дата выдачи: ${issueDate} | Подпись Глав. Врача: ${headDoctorSign} | Подпись Главы Отдела: ${departmentHeadSign} | Печать: Больница`]
+                    [`cmd`,`/do Информация в удостоверении: ИФ: ${rpName} | Фотография сотрудника 3x4 | Организация: Больница | Должность: ${position} | Отдел: ${departmentLabel} | Дата выдачи: ${issueDate} | Подпись Глав. Врача: ${headDoctorSign}${departmentHeadText} | Печать: Больница`]
                 ],"icon":"minecraft:paper","customModelData":0,"keybind":[]},
                 {"name":"выдача медкарты","actions":[
                     ["cmd","/mee положив паспорт перед собой на стол, сверяет данные и проверяет фотографию, после чего, берёт чистую медкарту и начинает заполнять по паспортным данным"],
