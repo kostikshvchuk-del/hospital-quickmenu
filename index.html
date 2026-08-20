@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital QuickMenu Generator SOUTH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #cursorGlow {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,155,176,0.4), transparent 70%);
+            transform: translate(-50%, -50%);
+            transition: width 0.15s, height 0.15s, opacity 0.15s;
+            opacity: 0;
+        }
+
+        .sparkle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            width: 6px;
+            height: 6px;
+            background: #ff9bb0;
+            border-radius: 50%;
+            box-shadow: 0 0 6px 2px rgba(255,155,176,0.6);
+            animation: sparkleFade 0.6s ease-out forwards;
+        }
+
+        @keyframes sparkleFade {
+            0% { opacity: 1; transform: scale(1) rotate(0deg); }
+            100% { opacity: 0; transform: scale(0.2) rotate(180deg); }
+        }
+
+        .star {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            color: #ff9bb0;
+            font-size: 10px;
+            animation: starFloat 0.8s ease-out forwards;
+        }
+
+        @keyframes starFloat {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::before {
+            width: 500px;
+            height: 500px;
+            background: rgba(224, 94, 122, 0.14);
+            top: -100px;
+            left: -100px;
+            animation: floatA 12s ease-in-out infinite alternate;
+        }
+
+        body::after {
+            width: 400px;
+            height: 400px;
+            background: rgba(122, 42, 71, 0.25);
+            bottom: -80px;
+            right: -80px;
+            animation: floatB 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: linear-gradient(-45deg, #1a0d12, #2b1220, #331524, #240d18, #1a0d12);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+        }
+
+        @keyframes floatA {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(200px, 120px) scale(1.3); }
+        }
+
+        @keyframes floatB {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-180px, -100px) scale(1.2); }
+        }
+
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes borderPulse {
+            0%, 100% { border-color: rgba(224, 94, 122, 0.35); }
+            50% { border-color: rgba(255, 155, 176, 0.15); }
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { text-shadow: 0 0 20px rgba(255, 155, 176, 0.15); }
+            50% { text-shadow: 0 0 40px rgba(255, 155, 176, 0.3), 0 0 80px rgba(255, 155, 176, 0.1); }
+        }
+
+        @keyframes textShimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        @keyframes pulseOpacity {
+            0%, 100% { opacity: 0.65; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes flashRose {
+            0% { background: rgba(224, 94, 122, 0.2); }
+            100% { background: rgba(26, 13, 18, 0.7); }
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 155, 176, 0); }
+            50% { box-shadow: 0 0 0 3px rgba(255, 155, 176, 0.08); }
+        }
+
+        @keyframes charAppear {
+            0% { opacity: 0; transform: translateY(8px) scale(0.8); filter: blur(4px); color: #ff9bb0; }
+            50% { color: #ffd3de; }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); color: #fff5f7; }
+        }
+
+        @keyframes inputGlowRipple {
+            0% { box-shadow: 0 0 0 0 rgba(255, 155, 176, 0.3); }
+            100% { box-shadow: 0 0 0 6px rgba(255, 155, 176, 0); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            background: rgba(43, 22, 34, 0.55);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-radius: 28px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(224, 94, 122, 0.35);
+            animation: fadeInUp 0.7s ease-out, borderPulse 4s ease-in-out infinite 0.7s;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 30px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, #ff9bb0, #ffb8c8, #ff9bb0, #ff6f91, #ff9bb0);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeInUp 0.7s 0.1s ease-out both, glowPulse 3s ease-in-out infinite 0.8s, textShimmer 6s linear infinite 0.8s;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255, 190, 210, 0.85);
+            margin-bottom: 35px;
+            font-size: 14px;
+            letter-spacing: 1px;
+            animation: fadeInUp 0.7s 0.15s ease-out both, pulseOpacity 3s ease-in-out infinite 1s;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            animation: fadeInUp 0.5s ease-out both;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.2s; }
+        .form-group:nth-child(2) { animation-delay: 0.25s; }
+        .form-group:nth-child(3) { animation-delay: 0.3s; }
+        .form-group:nth-child(4) { animation-delay: 0.35s; }
+
+        .form-group.important {
+            background: linear-gradient(135deg, rgba(255,155,176,0.06), rgba(255,155,176,0.02));
+            border: 1px solid rgba(255,155,176,0.15);
+            border-left: 3px solid #ff9bb0;
+            border-radius: 0 12px 12px 0;
+            padding: 14px 16px 6px;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+        .encoding-toggle {
+            display: inline-flex; background: rgba(43,22,34,0.4);
+            border-radius: 10px; padding: 3px; gap: 2px;
+            border: 1px solid rgba(255,155,176,0.08);
+        }
+        .encoding-toggle label {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 8px; cursor: pointer;
+            font-size: 13px; font-weight: 600; color: rgba(255,220,230,0.5);
+            transition: all 0.25s ease; user-select: none;
+        }
+        .encoding-toggle input { display: none; }
+        .encoding-toggle label:has(input:checked) {
+            background: rgba(255,155,176,0.12); color: #ff9bb0;
+            box-shadow: 0 2px 8px rgba(255,155,176,0.08);
+        }
+        .encoding-toggle label:has(input:checked) .enc-icon {
+            opacity: 1;
+        }
+        .encoding-toggle label:hover:not(:has(input:checked)) {
+            color: rgba(255,220,230,0.8);
+        }
+        .enc-icon {
+            font-size: 11px; opacity: 0.4; transition: opacity 0.25s;
+        }
+        .form-group.important::after {
+            content: '*';
+            color: #ff9bb0; font-size: 18px;
+            position: absolute; top: 8px; right: 12px;
+            opacity: 0.4; animation: pulseOpacity 2s ease-in-out infinite;
+        }
+        .form-group.important label {
+            color: #ffb8c8;
+        }
+        .form-group.important:hover {
+            border-color: rgba(255,155,176,0.3);
+            background: linear-gradient(135deg, rgba(255,155,176,0.1), rgba(255,155,176,0.03));
+        }
+
+        label {
+            display: block;
+            color: #ff9bb0;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            animation: pulseOpacity 4s ease-in-out infinite 0.5s;
+        }
+
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-visual {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 13px 14px;
+            border-radius: 10px;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 1px;
+            color: #fff5f7;
+            font-size: 14px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            white-space: pre;
+            overflow: hidden;
+        }
+
+        .input-visual .char {
+            display: inline-block;
+            animation: charAppear 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        .input-visual .char.space {
+            min-width: 0.3em;
+        }
+
+        .input-visual .char.placeholder {
+            color: rgba(255, 200, 215, 0.45);
+        }
+
+        .input-visual .cursor-blink {
+            display: inline-block;
+            width: 1.5px;
+            height: 1em;
+            background: #ff9bb0;
+            margin-left: 1px;
+            animation: blink 0.8s step-end infinite;
+            opacity: 0;
+        }
+
+        .input-wrapper:focus-within .cursor-blink {
+            opacity: 1;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        input, select {
+            width: 100%;
+            padding: 13px 14px;
+            background: rgba(61, 22, 40, 0.5);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(224, 94, 122, 0.4);
+            border-radius: 10px;
+            color: #fff5f7;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        input.animated-input {
+            color: transparent;
+            caret-color: transparent;
+        }
+
+        input::placeholder {
+            color: rgba(255, 200, 215, 0.4);
+        }
+
+        input.animated-input::placeholder {
+            color: transparent;
+        }
+
+        input:hover, select:hover {
+            border-color: rgba(224, 94, 122, 0.7);
+            background: rgba(61, 22, 40, 0.65);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        input:focus, select:focus {
+            border-color: #ff9bb0;
+            background: rgba(74, 28, 50, 0.7);
+            box-shadow: 0 0 0 3px rgba(255, 155, 176, 0.1), 0 0 25px rgba(255, 155, 176, 0.08);
+            transform: translateY(-1px);
+        }
+
+        input.ripple {
+            animation: inputGlowRipple 0.3s ease-out;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23ff9bb0' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 40px;
+            color: #fff5f7;
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+
+        select option {
+            background: #2b1220;
+            color: #fff5f7;
+        }
+
+        .note {
+            font-size: 12px;
+            color: rgba(255, 190, 210, 0.65);
+            margin-top: 6px;
+            padding-left: 2px;
+            animation: pulseOpacity 5s ease-in-out infinite 1s;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 25px;
+            animation: fadeInUp 0.7s 0.35s ease-out both;
+        }
+
+        button {
+            position: relative;
+            overflow: hidden;
+            border: none;
+            padding: 13px 28px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+            transition: left 0.6s;
+            pointer-events: none;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent);
+            pointer-events: none;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #ff9bb0, #f06e94);
+            color: #2a0d1e;
+            box-shadow: 0 4px 20px rgba(255, 155, 176, 0.25);
+            animation: glowPulse 3s ease-in-out infinite 2s;
+        }
+
+        button.primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 35px rgba(255, 155, 176, 0.4);
+        }
+
+        button.success {
+            background: linear-gradient(135deg, #e06b8d, #c24868);
+            color: white;
+            box-shadow: 0 4px 20px rgba(224, 94, 122, 0.25);
+        }
+
+        button.success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 35px rgba(224, 94, 122, 0.4);
+        }
+
+        button.secondary {
+            background: rgba(224, 94, 122, 0.4);
+            backdrop-filter: blur(4px);
+            color: #ff9bb0;
+            border: 1px solid rgba(224, 94, 122, 0.3);
+        }
+
+        button.secondary:hover {
+            background: rgba(219, 68, 110, 0.6);
+            border-color: rgba(255, 155, 176, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .output-section {
+            margin-top: 30px;
+            background: rgba(70, 24, 44, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(224, 94, 122, 0.3);
+            animation: fadeInUp 0.7s 0.4s ease-out both;
+            transition: all 0.3s;
+        }
+
+        .output-section:hover {
+            border-color: rgba(224, 94, 122, 0.5);
+            box-shadow: 0 0 30px rgba(224, 94, 122, 0.05);
+        }
+
+        .output-section h3 {
+            color: #ff9bb0;
+            margin-bottom: 15px;
+            font-size: 17px;
+            letter-spacing: 0.5px;
+            animation: pulseOpacity 4s ease-in-out infinite 1.5s;
+        }
+
+        pre {
+            background: rgba(20, 8, 14, 0.7);
+            padding: 18px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-size: 11px;
+            color: #ffd3de;
+            font-family: 'Monaco', 'Courier New', monospace;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid rgba(224, 94, 122, 0.15);
+            transition: all 0.3s;
+        }
+
+        pre.flash {
+            animation: flashRose 0.6s ease-out;
+        }
+
+        .info {
+            background: rgba(61, 22, 40, 0.4);
+            backdrop-filter: blur(4px);
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #ffd3de;
+            border-left: 3px solid #ff9bb0;
+            line-height: 1.5;
+            animation: borderGlow 3s ease-in-out infinite 2.5s;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .anchor {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 18px; border-radius: 8px;
+            background: rgba(224,94,122,0.3); backdrop-filter: blur(4px);
+            color: #ffd3de; text-decoration: none; font-size: 13px; font-weight: 600;
+            border: 1px solid rgba(224,94,122,0.2); transition: all 0.25s ease;
+        }
+        .anchor:hover {
+            background: rgba(224,94,122,0.5); border-color: rgba(255,155,176,0.3);
+            transform: translateY(-1px); box-shadow: 0 4px 15px rgba(224,94,122,0.2);
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(224, 94, 122, 0.3);
+            color: rgba(255, 190, 210, 0.6);
+            font-size: 13px;
+            text-align: center;
+            line-height: 1.7;
+            animation: fadeInUp 0.7s 0.45s ease-out both;
+        }
+
+        .footer div {
+            animation: pulseOpacity 6s ease-in-out infinite 3s;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(20, 8, 14, 0.3);
+            border-radius: 3px;
+            transition: background 0.3s;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(224, 94, 122, 0.5);
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(224, 94, 122, 0.8);
+        }
+
+        ::selection {
+            background: rgba(255, 155, 176, 0.25);
+            color: #fff;
+        }
+
+        @media (max-width: 700px) {
+            body { padding: 12px; }
+            .container { padding: 24px 18px; }
+            .row { grid-template-columns: 1fr; }
+            h1 { font-size: 22px; letter-spacing: 1px; }
+            button { min-width: 140px; padding: 12px 18px; font-size: 14px; }
+            .btn-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="container">
+        <h1>HOSPITAL QUICKMENU GENERATOR</h1>
+        <div class="subtitle">RPM SOUTH • Заполните данные для генерации QuickMenu</div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Пол</label>
+                <select id="gender">
+                    <option value="male">Мужской</option>
+                    <option value="female">Женский</option>
+                </select>
+            </div>
+            <div class="form-group important">
+                <label>Имя и Фамилия</label>
+                <div class="input-wrapper">
+                    <div class="input-visual" id="visual-rpName"><span class="cursor-blink"></span></div>
+                    <input type="text" id="rpName" class="animated-input" placeholder="Алексей Иванов">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Должность</label>
+                <select id="position">
+                    <option value="Врач">Врач</option>
+                    <option value="Медсестра">Медсестра</option>
+                    <option value="Хирург">Хирург</option>
+                    <option value="Терапевт">Терапевт</option>
+                    <option value="Главный Врач">Главный Врач</option>
+                    <option value="Зам. Главного Врача">Зам. Главного Врача</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Отдел</label>
+                <select id="department">
+                    <option value="Хирургия">Хирургия</option>
+                    <option value="Терапия">Терапия</option>
+                    <option value="Реанимация">Реанимация</option>
+                    <option value="Педиатрия">Педиатрия</option>
+                    <option value="Отсутствует">Отсутствует</option>
+                </select>
+                <div class="note" id="departmentDesc">Выберите отдел, чтобы увидеть описание.</div>
+            </div>
+            <div class="form-group">
+                <label>Дата выдачи</label>
+                <input type="date" id="issueDate">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group important">
+                <label>Подпись Глав. Врача</label>
+                <div class="input-wrapper">
+                    <div class="input-visual" id="visual-headDoctorSign"><span class="cursor-blink"></span></div>
+                    <input type="text" id="headDoctorSign" class="animated-input" placeholder="Annet">
+                </div>
+                <div class="note">Никнейм или подпись главного врача</div>
+            </div>
+            <div class="form-group important">
+                <label>Подпись Главы Отдела</label>
+                <div class="input-wrapper">
+                    <div class="input-visual" id="visual-departmentHeadSign"><span class="cursor-blink"></span></div>
+                    <input type="text" id="departmentHeadSign" class="animated-input" placeholder="ГлаваОтдела">
+                </div>
+                <div class="note">Никнейм или подпись главы отдела</div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: center; margin-bottom: 18px;">
+            <div class="encoding-toggle">
+                <label>
+                    <input type="radio" name="encoding" value="utf8" checked>
+                    <span class="enc-icon">▲</span> RPM Лаунчер
+                </label>
+                <label>
+                    <input type="radio" name="encoding" value="ansi">
+                    <span class="enc-icon">■</span> Другие лаунчера
+                </label>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="primary" onclick="generateAndCopy(event)">Сгенерировать и скопировать</button>
+            <button class="success" onclick="downloadJSON()">Скачать quickmenu_data.json</button>
+            <button class="secondary" onclick="resetForm()">Сбросить</button>
+        </div>
+
+        <div class="output-section">
+            <h3>Сгенерированный JSON:</h3>
+            <pre id="jsonOutput">// Заполните форму и нажмите кнопку</pre>
+            <div class="info">
+                После генерации JSON автоматически скопируется в буфер обмена. Вставьте содержимое в файл
+                <strong>quickmenu_data.json</strong> в папке config вашего клиента Minecraft.
+            </div>
+        </div>
+        <div class="footer">
+            <div>Сервер: RPM SOUTH | Создатель: kiralis29 | Yumi_loom | Константин Райнхард</div>
+            <div>Сделано без поддержки RPM-ROLEPLAY :(</div>
+        </div>
+    </div>
+
+    <script>
+        const departmentSelect = document.getElementById('department');
+        const departmentDesc = document.getElementById('departmentDesc');
+
+        const departmentDescriptions = {
+            "Хирургия": "Отделение хирургии — проведение операций и хирургических вмешательств.",
+            "Терапия": "Терапевтическое отделение — диагностика и лечение внутренних болезней.",
+            "Реанимация": "Реанимационное отделение — помощь пациентам в тяжёлом или критическом состоянии.",
+            "Педиатрия": "Педиатрическое отделение — медицинская помощь детям и подросткам."
+        };
+
+        function toggleDepartmentFields() {
+            const desc = departmentDescriptions[departmentSelect.value] || '';
+            if (departmentDesc) departmentDesc.textContent = desc || 'Выберите отдел, чтобы увидеть описание.';
+        }
+
+        departmentSelect.addEventListener('change', toggleDepartmentFields);
+        toggleDepartmentFields();
+
+        const animatedInputs = ['rpName', 'headDoctorSign', 'departmentHeadSign'];
+        const prevValues = {};
+
+        function renderAnimatedText(inputId, oldText, newText) {
+            const input = document.getElementById(inputId);
+            const visual = document.getElementById('visual-' + inputId);
+            const text = newText || input.value;
+            const placeholder = input.placeholder || '';
+
+            const isPlaceholder = text.length === 0;
+            const displayText = text.length > 0 ? text : placeholder;
+            const wasEmpty = !oldText || oldText.length === 0;
+
+            let addedIndex = -1;
+            if (oldText === undefined) {
+                addedIndex = 0;
+            } else if (!wasEmpty && oldText && newText && newText.length > oldText.length) {
+                for (let i = 0; i < newText.length; i++) {
+                    if (i >= oldText.length || newText[i] !== oldText[i]) {
+                        addedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            let html = '';
+            const isInitial = oldText === undefined;
+            if (isPlaceholder) {
+                html += '<span class="cursor-blink"></span>';
+            }
+            for (let i = 0; i < displayText.length; i++) {
+                const ch = displayText[i];
+                const isNew = (isInitial || (!isPlaceholder && addedIndex >= 0 && i >= addedIndex));
+                const cls = isPlaceholder ? 'char placeholder' : 'char';
+                const animDelay = isNew ? `${(i - addedIndex) * 0.035}s` : '0s';
+                const animDuration = isNew ? '0.35s' : '0s';
+                const anim = isNew ? `charAppear ${animDuration} cubic-bezier(0.34, 1.56, 0.64, 1) ${animDelay} both` : 'none';
+                html += `<span class="${cls}" style="${isNew ? `animation:${anim}` : 'animation:none;opacity:1;transform:none;filter:none'}">${ch === ' ' ? '&nbsp;' : ch}</span>`;
+            }
+            if (!isPlaceholder) {
+                html += '<span class="cursor-blink"></span>';
+            }
+            visual.innerHTML = html;
+        }
+
+        animatedInputs.forEach(id => {
+            const input = document.getElementById(id);
+            prevValues[id] = input.value;
+            renderAnimatedText(id);
+            input.addEventListener('input', function() {
+                const prev = prevValues[id] || '';
+                renderAnimatedText(id, prev, this.value);
+                prevValues[id] = this.value;
+                this.classList.remove('ripple');
+                void this.offsetWidth;
+                this.classList.add('ripple');
+            });
+        });
+
+        function generateJSON() {
+            const rpName = document.getElementById('rpName').value || "Алексей Иванов";
+            const position = document.getElementById('position').value;
+            const department = document.getElementById('department').value;
+            const headDoctorSign = document.getElementById('headDoctorSign').value || "Annet";
+            const departmentHeadSign = document.getElementById('departmentHeadSign').value || "ГлаваОтдела";
+            const gender = document.getElementById('gender').value;
+            const isFemale = gender === 'female';
+
+            function meLine(male, female) { return isFemale ? female : male; }
+
+            const issueDateRaw = document.getElementById('issueDate').value;
+            let issueDate = issueDateRaw;
+            if (!issueDate) {
+                const today = new Date();
+                issueDate = today.toLocaleDateString('ru-RU').replace(/\//g, '.');
+            } else {
+                issueDate = issueDateRaw.split('-').reverse().join('.');
+            }
+
+            const noDepartmentText = "Отсутствует";
+            const departmentLabel = department === noDepartmentText ? "Больница" : department;
+
+            let template = [
+                {"name":"/vrc","actions":[["cmd","/vrc"]],"icon":"porting_lib:area_selector","customModelData":0,"keybind":[]},
+                {"name":"/sit","actions":[["cmd","/sit"]],"icon":"minecraft:polished_blackstone_stairs","customModelData":0,"keybind":[]},
+                {"name":"лежать","actions":[["cmd","/lay"]],"icon":"minecraft:lime_bed","customModelData":0,"keybind":[]},
+                {"name":"приветствие","actions":[[`cmd`,`Здравствуйте, я являюсь сотрудником больницы штата РПМ, чем я могу Вам помочь?`]],"icon":"minecraft:emerald_block","customModelData":0,"keybind":[]},
+                {"name":"удостоверение","actions":[
+                    [`cmd`, meLine(
+                        `/me достал удостоверение из кармана халата, показал его человеку напротив несколько секунд в открытом виде, после чего захлопнул и убрал обратно.`,
+                        `/me достала удостоверение из кармана халата, показала его человеку напротив несколько секунд в открытом виде, после чего захлопнула и убрала обратно.`
+                    )],
+                    [`cmd`,`/do Информация в удостоверении: ИФ: ${rpName} | Фотография сотрудника 3x4 | Организация: Больница | Должность: ${position} | Отдел: ${departmentLabel} | Дата выдачи: ${issueDate} | Подпись Глав. Врача: ${headDoctorSign} | Подпись Главы Отдела: ${departmentHeadSign} | Печать: Больница`]
+                ],"icon":"minecraft:paper","customModelData":0,"keybind":[]},
+                {"name":"выдача медкарты","actions":[
+                    ["cmd","/mee положив паспорт перед собой на стол, сверяет данные и проверяет фотографию, после чего, берёт чистую медкарту и начинает заполнять по паспортным данным"],
+                    ["cmd","/todo Заполнив мед.карту, ставит штамп, расписывается и передает посетителю вместе с паспортом : проверяйте."],
+                    ["cmd","/n Смотреть свою медкарту командой /med card"],
+                    ["cmd","/med givecard"]
+                ],"icon":"minecraft:writable_book","customModelData":0,"keybind":[]},
+                {"name":"выписка из больницы","actions":[
+                    [`cmd`, meLine(
+                        `/mee осмотрев пациента, удостоверившись в его состоянии здоровья, подходит к рабочему столу, открыл журнал лечащих в данный момент пациентов в 6 палате, найдя фамилию посмотрел запись результатов его анализов`,
+                        `/mee осмотрев пациента, удостоверившись в его состоянии здоровья, подходит к рабочему столу, открыла журнал лечащих в данный момент пациентов в 6 палате, найдя фамилию посмотрела запись результатов его анализов`
+                    )],
+                    ["cmd","/mee взяв ручку ставит пометку о его выписке в журнале, взяв ручку и справку начинает заполнять данными, ставит подпись и штамп и подойдя к пациенту выдает ему справку на выписку"],
+                    ["cmd","/med heal"]
+                ],"icon":"minecraft:written_book","customModelData":0,"keybind":[]},
+                {"name":"лечение (таблетка)","actions":[
+                    ["cmd","/mee держа аптечку в руках, открывает ее и достает нужную таблетку, после чего передаёт её пациенту, одновременно закрывая аптечку"],
+                    ["cmd","/med heal"]
+                ],"icon":"minecraft:apple","customModelData":0,"keybind":[]},
+                {"name":"лечение (ушиб)","actions":[
+                    ["cmd","/mee открыв аптечку, достаёт мазь, одевает на свои руки перчатки и осматривает место ушиба"],
+                    ["cmd","/mee открыв крышку тюбика и выдавив немного на перчатку, начинает намазывать место ушиба пострадавшему, после чего, берет бинт и распаковав из пачки, забинтовывает место ушиба"],
+                    ["cmd","/med heal"]
+                ],"icon":"minecraft:white_wool","customModelData":0,"keybind":[]},
+                {"name":"нашатырь","actions":[
+                    ["cmd","/mee открывает аптечку и достает нашатырный спирт прихватив ватку"],
+                    ["cmd","/mee открывает крышку банки и смочив ватку подносит слегка махнув перед носом человека без сознания, ожидая когда он придет в себя"],
+                    ["cmd","/mee закрывает крышку банки и убирает нашатырь обратно в аптечку, наблюдает за состоянием пациента"],
+                    ["cmd","/med heal"]
+                ],"icon":"minecraft:glass_bottle","customModelData":0,"keybind":[]},
+                {"name":"продажа лекарств","actions":[
+                    ["cmd","/mee открывает аптечку и достает нужные препараты, после чего передаёт их человеку напротив, одновременно закрывая аптечку"],
+                    ["cmd","/med sell"]
+                ],"icon":"minecraft:emerald","customModelData":0,"keybind":[]},
+                {"name":"осмотр (проф. пригодность)","actions":[
+                    ["cmd","/mee снимает стетоскоп со своей шеи, начинает проверять дыхание, затем берёт тонометр и измеряет давление"],
+                    ["cmd","/todo Убирая все на свое место : Дыхание и давление у вас в норме."],
+                    ["cmd","/mee достаёт из кармана халата фонарик и начинает поочерёдно светить в глаза, смотря на реакцию зрачка"],
+                    ["cmd","/todo Выключив фонарик, возвращая его в карман медицинского халата : Всё в порядке."],
+                    ["cmd","/mee достав отоскоп из медицинской сумки, держит ухо пациента слегка натянутым, прислонив отоскоп в каждое ухо по очереди, осматривает слуховой аппарат"],
+                    ["cmd","/todo Закончив осмотр слухового аппарата и спрятав отоскоп в медицинскую сумку : Слуховой аппарат в норме."],
+                    ["cmd","/todo Выписывает справку, после чего передаёт человеку напротив : Вы здоровы и прошли осмотр на проф.пригодность."]
+                ],"icon":"minecraft:knowledge_book","customModelData":0,"keybind":[]},
+                {"name":"осмотр (дыхание/давление)","actions":[
+                    ["cmd","/mee сняв стетоскоп со своей шеи и приподняв рубашку человеку напротив, начинает прослушивать дыхание"],
+                    ["cmd","/mee обойдя со спины продолжает прослушивать дыхание"],
+                    ["cmd","/todo Опустив рубашку пациенту и повесив обратно стетоскоп себе на шею : Дыхание чистое."],
+                    ["cmd","/do На плече висит медицинская сумка."],
+                    ["cmd","/mee достав тонометр из медицинской сумки и надев манжет на руку пациента выше локтя, начинает накачивать воздух в манжет, измеряет давление смотря на манометр"],
+                    ["cmd","/todo Измерив давление, снимая манжет с руки пациента : Давление в норме."],
+                    ["cmd","/todo Подписывает справку, передав человеку напротив : Вы прошли мед.осмотр, вы здоровы."]
+                ],"icon":"minecraft:clock","customModelData":0,"keybind":[]},
+                {"name":"инъекция","actions":[
+                    ["cmd","/mee достает шприц, спиртовую салфетку и бинт, протирает место для укола спиртовой салфеткой и начинает делать укол, вводя иглу в мышечную ткань пациента"],
+                    ["cmd","/do Инъекция сделана."],
+                    ["cmd","/mee прикладывая ватку на место укола, вытаскивает иглу, убирает ватку и заклеивает кусочком пластыря место прокола"],
+                    ["cmd","/med inject"]
+                ],"icon":"minecraft:spectral_arrow","customModelData":0,"keybind":[]}
+            ];
+
+            return JSON.stringify(template);
+        }
+
+        function generateAndCopy(event) {
+            const minifiedJSON = generateJSON();
+            const pre = document.getElementById('jsonOutput');
+            pre.textContent = minifiedJSON;
+
+            pre.classList.remove('flash');
+            void pre.offsetWidth;
+            pre.classList.add('flash');
+
+            navigator.clipboard.writeText(minifiedJSON).then(() => {
+                const btn = event.currentTarget || event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Скопировано!';
+                btn.style.pointerEvents = 'none';
+                btn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.pointerEvents = '';
+                    btn.style.transform = '';
+                }, 2000);
+            }).catch(err => {
+                alert('Ошибка копирования: ' + err);
+            });
+        }
+
+        function encodeWindows1251(str) {
+            const bytes = [];
+            for (let i = 0; i < str.length; i++) {
+                let code = str.charCodeAt(i);
+                if (code < 128) {
+                    bytes.push(code);
+                } else if (code === 0x401) {
+                    bytes.push(0xA8);
+                } else if (code === 0x451) {
+                    bytes.push(0xB8);
+                } else if (code >= 0x410 && code <= 0x42F) {
+                    bytes.push(code - 0x410 + 0xC0);
+                } else if (code >= 0x430 && code <= 0x44F) {
+                    bytes.push(code - 0x430 + 0xE0);
+                } else {
+                    bytes.push(0x3F);
+                }
+            }
+            return new Uint8Array(bytes);
+        }
+
+        function getEncoding() {
+            return document.querySelector('input[name="encoding"]:checked').value;
+        }
+
+        function downloadJSON() {
+            const minifiedJSON = generateJSON();
+            const isUTF8 = getEncoding() === 'utf8';
+            let blob;
+            if (isUTF8) {
+                blob = new Blob([minifiedJSON], {type: 'application/json;charset=utf-8'});
+            } else {
+                const encoded = encodeWindows1251(minifiedJSON);
+                blob = new Blob([encoded], {type: 'application/json;charset=windows-1251'});
+            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'quickmenu_data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('Файл quickmenu_data.json сохранен в ' + (getEncoding() === 'utf8' ? 'UTF-8' : 'ANSI') + '!');
+        }
+
+        function resetForm() {
+            document.getElementById('gender').value = 'male';
+            document.getElementById('rpName').value = 'Алексей Иванов';
+            document.getElementById('position').value = 'Врач';
+            document.getElementById('department').value = 'Хирургия';
+            document.getElementById('headDoctorSign').value = 'Annet';
+            document.getElementById('departmentHeadSign').value = '';
+            document.getElementById('issueDate').valueAsDate = new Date();
+            document.getElementById('rpName').value = 'Алексей Иванов';
+            prevValues['rpName'] = 'Алексей Иванов';
+            renderAnimatedText('rpName');
+            document.getElementById('jsonOutput').textContent = '// Заполните форму и нажмите кнопку';
+            toggleDepartmentFields();
+            animatedInputs.forEach(id => {
+                const input = document.getElementById(id);
+                prevValues[id] = input.value;
+                renderAnimatedText(id);
+            });
+        }
+
+        document.getElementById('issueDate').valueAsDate = new Date();
+        document.getElementById('rpName').value = 'Алексей Иванов';
+        prevValues['rpName'] = 'Алексей Иванов';
+        renderAnimatedText('rpName');
+
+        const cursorGlow = document.createElement('div');
+        cursorGlow.id = 'cursorGlow';
+        document.body.appendChild(cursorGlow);
+
+        let mouseX = -100, mouseY = -100;
+        let lastX = -100, lastY = -100;
+        let sparkleTimer = 0;
+
+        document.addEventListener('mousemove', function(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            cursorGlow.style.left = mouseX + 'px';
+            cursorGlow.style.top = mouseY + 'px';
+            cursorGlow.style.opacity = '1';
+
+            const dist = Math.hypot(mouseX - lastX, mouseY - lastY);
+            if (dist > 6) {
+                lastX = mouseX;
+                lastY = mouseY;
+                createSparkle(mouseX, mouseY);
+                if (Math.random() > 0.6) {
+                    createStar(mouseX, mouseY);
+                }
+            }
+
+            clearTimeout(sparkleTimer);
+            sparkleTimer = setTimeout(() => {
+                cursorGlow.style.opacity = '0';
+            }, 2000);
+        });
+
+        document.addEventListener('mouseleave', function() {
+            cursorGlow.style.opacity = '0';
+        });
+
+        function createSparkle(x, y) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            const size = 3 + Math.random() * 5;
+            sparkle.style.width = size + 'px';
+            sparkle.style.height = size + 'px';
+            sparkle.style.left = (x + (Math.random() - 0.5) * 14) + 'px';
+            sparkle.style.top = (y + (Math.random() - 0.5) * 14) + 'px';
+            sparkle.style.background = ['#ff9bb0', '#ffb8c8', '#ffd3de', '#f06e94'][Math.floor(Math.random() * 4)];
+            sparkle.style.boxShadow = `0 0 ${4 + size}px 2px ${sparkle.style.background.replace(')', ',0.4)').replace('rgb', 'rgba')}`;
+            document.body.appendChild(sparkle);
+            setTimeout(() => sparkle.remove(), 600);
+        }
+
+        function createStar(x, y) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.textContent = '+';
+            star.style.fontWeight = 'bold';
+            star.style.left = x + 'px';
+            star.style.top = y + 'px';
+            star.style.setProperty('--tx', (Math.random() - 0.5) * 40 + 'px');
+            star.style.setProperty('--ty', (Math.random() - 0.5) * 40 + 'px');
+            star.style.color = ['#ff9bb0', '#ffb8c8', '#fff5f7'][Math.floor(Math.random() * 3)];
+            star.style.fontSize = (10 + Math.random() * 10) + 'px';
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 800);
+        }
+    </script>
+</body>
+</html>
